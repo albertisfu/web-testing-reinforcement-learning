@@ -146,7 +146,7 @@ q_matrix_trained = {'0000': [112.91211887817714, 123.42509973074664, 114.4532016
 def training(entorno):
 	discount = 0.9
 	learning_rate = 0.1
-	for _ in range(100): #cambiar numero de epocas de entrenamiento
+	for _ in range(1): #cambiar numero de epocas de entrenamiento
 		#inicializar entorno en cada epoca
 		entorno.initialize()
 
@@ -159,6 +159,7 @@ def training(entorno):
 			# obtener todas las acciones posibles a aplicar
 			possible_actions = entorno.get_all_possible_actions()
 			# seleccionar una acción de forma aleatoria
+			#TODO check, it seems that every step a random action is selected, we are lacking explotation with gama 
 			action = random.choice(possible_actions)
 			# obtener el siguiente estado en base a la acción seleccionada
 			next_state = entorno.get_next_state(action)

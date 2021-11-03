@@ -6,7 +6,87 @@ import urllib3
 
 import random
 
-fields = {'title': ['', 'test'], 'type':[0,1,2], 'checkbox':[0,1], 'submit':[0,1]}
+text = 'aaaa'
+number = 9
+
+fields_1 = {'check':[0,1], 'type':[0,1,2,3,4]}
+fields_1_1 = {'check':[0,1], 'type':[0,1,2,3,4,5]}
+fields_1_1_1 = {'check':[0,1], 'type':[0,1,2,3,4,5,6]}
+fields_1_1_2 = {'check':[0,1], 'type':[0,1,2,3,]}
+fields_1_1_1_1 = {'check':[0,1], 'type':[0,1,2,3,4,5,6,7]}
+
+fields_1_2 = {'check':[0,1], 'type':[0,1,2,3,4,5,6]}
+fields_1_2_1 = {'check':[0,1], 'type':[0,1,2,3,4]}
+
+
+
+#get URL to visit, initial page
+
+
+#text= fix
+#number =  fix
+#check = [1,2] fix
+#get options for type
+
+
+#estado/nodo
+    #dato
+    #prev_node
+
+    #field1=none
+    #field2=none
+    #field3=none
+    #field4=none
+    
+
+#path
+    #self.root = None
+
+    #def append
+    #   append node 
+
+
+#recreate_state(estado):
+    #append nodos en un stack, de atras al principio, el principio quedara hasta arriba
+    #ir a page 1
+    #recrear estado, llenando form de arriba del stack hacia abajo
+    
+
+
+
+#function set_submit_form(url, last_state):
+    #recreate_state(estado)
+    #get Form of page  
+    #get options for type
+    
+    
+
+    #for ty in type:
+        #for ch in checkbox:
+            #set text = 'aaa'
+            #set number = 10
+            #set checkbox = ch
+            #set type = ty
+
+            #current_state= create estado antes de submit
+            #current_state.prev_node = last_state
+
+            #submit
+            #newurl = submit.url
+            #if url  = 400 or 500: 
+                #return
+            #else
+                #set_submit_form(newurl, current_state)
+
+
+
+#create path
+
+#function set_submit_form(url, root_state)
+
+        
+
+
 
 
 
@@ -124,52 +204,15 @@ class Enviroment:
 
 
 
-
-environment_matrix = {'0000':[0,0,0,0,0,0,0,0],'0010':[0,0,0,0,0,0,0,0],'0020':[0,0,0,0,0,0,0,0],'0100':[0,0,0,0,0,0,0,0],
-'0110':[0,0,0,0,0,0,0,0],'0120':[0,0,0,0,0,0,0,0],'1000':[0,0,0,0,0,0,0,0],'1010':[0,0,0,0,0,0,0,0],'1020':[0,0,0,0,0,0,0,0],
-'1100':[0,0,0,0,0,0,0,0],'1110':[0,0,0,0,0,0,0,100],'1120':[0,0,0,0,0,0,0,100],'0001':[0,0,0,0,0,0,0,0],'0011':[0,0,0,0,0,0,0,0],
-'0021':[0,0,0,0,0,0,0,0],'0101':[0,0,0,0,0,0,0,0],'0111':[0,0,0,0,0,0,0,0],'0121':[0,0,0,0,0,0,0,0],'1001':[0,0,0,0,0,0,0,0],
-'1011':[0,0,0,0,0,0,0,0],'1021':[0,0,0,0,0,0,0,0],'1101':[0,0,0,0,0,0,0,0],'1111':[0,0,0,0,0,0,0,0],'1121':[0,0,0,0,0,0,0,0]}
-
-
-
-
-q_matrix_trained = {'0000':[0,10,0,10,0,10,10,0],'0010':[0,10,0,10,0,0,10,0],'0020':[0,10,0,10,0,10,0,0],'0100':[0,10,0,0,0,10,10,0],
-'0110':[0,10,0,0,0,0,10,0],'0120':[0,10,0,0,0,10,0,0],'1000':[0,0,0,10,0,10,10,0],'1010':[0,0,0,10,0,0,10,0],'1020':[0,0,0,10,0,10,0,0],
-'1100':[0,0,0,0,0,10,10,0],'1110':[0,0,0,0,0,0,10,100],'1120':[0,0,0,0,0,10,0,100],'0001':[0,10,0,10,0,10,10,0],'0011':[0,10,0,10,0,0,10,0],
-'0021':[0,10,0,10,0,10,0,0],'0101':[0,10,0,0,0,10,10,0],'0111':[0,10,0,0,0,0,10,0],'0121':[0,10,0,0,0,10,0,0],'1001':[0,0,0,10,0,10,10,0],
-'1011':[0,0,0,10,0,0,10,0],'1021':[0,0,0,10,0,10,0,0],'1101':[0,0,0,0,0,10,10,0],'1111':[0,0,0,0,0,0,0,0],'1121':[0,0,0,0,0,0,0,0]}
-
-
-def testing(entorno):
-	discount = 0.9
-	learning_rate = 0.1
-	entorno.initialize()
-	# get starting place
-	cur_pos, action = random.choice(list(environment_matrix.items()))
-	# while goal state is not reached
-	counter = 0
-	#iterate explorin states until a http response is received 
-	while(entorno.http_response == ''):
-		counter = counter +1
-		# get all possible next states from cur_step
-		possible_actions = entorno.get_all_possible_actions()
-		# select any one action randomly
-		max_value = max(q_matrix_trained[cur_pos])
-		action = max_index = q_matrix_trained[cur_pos].index(max_value)
-		# find the next state corresponding to the action selected
-		next_state = entorno.get_next_state(action)
-		# update the q_matrix
-		# go to next state
-		cur_pos = next_state
-		print('Estado Actual:',cur_pos)
-
-	print('Estatus HTTP: ', entorno.http_response)	
-	print('Iteraciones: ', counter)
-
 entorno = Enviroment()
 
-testing(entorno)
+#testing(entorno)
+
+#training(entorno)
+
+
+
+
 
 
 
