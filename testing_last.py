@@ -86,7 +86,7 @@ class Stack:
 	#function to check if stack is empty
 	def empty(self):
 		#print('entro check if empty')
-		if self.head.next_node == None:
+		if self.head == None:
 			
 			return True
 		else:
@@ -97,7 +97,8 @@ class Stack:
 		if self.head != None:
 			current_node = self.head
 			while current_node != None:
-				print(current_node.data.text)
+				#print(current_node.data.url)
+				print(current_node.data)
 				current_node = current_node.next_node
 
 
@@ -106,7 +107,7 @@ class Stack:
 def recreate_state(state, entorno):
 	#create an stack where is stored from the current state to previous node before root
 	stack = Stack()
-	#asign state to current state
+	#asign state to current state (desire state to recreate)
 	current_state = state
 	#iterate until get a node before root
 	while current_state.prev_node!=None:
@@ -114,9 +115,11 @@ def recreate_state(state, entorno):
 		current_state = current_state.prev_node
 
 	print('- - - - - - Entro Stack recreate State')
-	print('Estado Head:', stack.head)
-	stack.print_list()
-
+	#print('Estado Head:', stack.head)
+	#stack.print_list()
+	print('---fin lista urls')
+	#initialize entorno, get root url
+	entorno.initialize()
 	#build each state, pop last stack element and recreate state
 	if stack.head != None:
 		#review if this is empty 
@@ -124,18 +127,20 @@ def recreate_state(state, entorno):
 		while stack.empty()!=True:
 			print('Ingreso if stack empty: ')
 			#get_next_form(entorno.url, stack)
-			#initialize enviorement, get form of new page
-			entorno.initialize()
+			#reload page, get form of new page
+			entorno.browser.open(entorno.browser.geturl())
+			entorno.reload()
+			#get first state before root
 			state_last = stack.pop()
 			#get tipos of current form page
-			entorno.tipos = entorno.browser.form.possible_items("type")
+			#entorno.tipos = entorno.browser.form.possible_items("type")
 			entorno.browser['title'] = state_last.text
 			entorno.browser['cantidad'] = state_last.number
 			if state_last.check == 'on':
 				entorno.browser.find_control("checkbox").items[0].selected = True
 			else:
 				entorno.browser.find_control("checkbox").items[0].selected = False
-			entorno.browser.set(True, entorno.tipos[int(state_last.type)] , "type")
+			entorno.browser.set(True, state_last.type , "type")
 
 			entorno.status_submit = '1'
 			#submit form
@@ -150,6 +155,9 @@ def recreate_state(state, entorno):
 					#TODO verify if is necesary go to URL
 					#url = response.geturl()
 					#return
+					entorno.reload()
+					print('¿¿***¿¿¿----- URL actual')
+					print(entorno.browser.geturl())
 					print('===== se avanzo para pasar de pagina')
 					#pass
 
@@ -163,7 +171,10 @@ def recreate_state(state, entorno):
 
 
 def build_error_chain(state):
-	#create an stack where is stored from the current state to previous node before root
+
+	global_error_stack.push(state)
+	
+	"""#create an stack where is stored from the current state to previous node before root
 	local_error_stack = Stack()
 	#asign state to current state
 	current_state = state
@@ -172,7 +183,7 @@ def build_error_chain(state):
 		local_error_stack.push(current_state)
 		current_state = current_state.prev_node
 	
-	global_error_stack.push(local_error_stack)
+	global_error_stack.push(local_error_stack)"""
 
 
 
@@ -181,26 +192,31 @@ def set_submit_form(entorno, last_state, numr):
 	recreate_state(last_state, entorno)
 	#if stack vacio no se recrea nada
 	#fill current state
-	entorno.initialize()
-	print('----- URL actual')
+	#entorno.initialize()
+	print('¿¿***¿¿¿----- URL actual para Submit')
 	print(entorno.browser.geturl())
 	entorno.tipos = entorno.browser.form.possible_items("type")
 
 	print('Tipos Entorno: ', entorno.tipos)
-	for ty in entorno.tipos:
+	cp_tipos = entorno.tipos
+	for ty in cp_tipos:
 		for ch in ['on', 'off']:
 			#recreate state
+			print('recreate state inside for')
 			recreate_state(last_state, entorno)
-			entorno.initialize()
-			entorno.tipos = entorno.browser.form.possible_items("type")
+			print('--- Error debug before error: ', entorno.browser.geturl())
+			entorno.browser.open(entorno.browser.geturl())
+			#print(entorno.browser.title())
+			entorno.reload()
+			#entorno.tipos = entorno.browser.form.possible_items("type")
 			#reload page to clean fields and test other combinations
 			#initialize browser to load form again also get tipos again
 			print('--- Entro Submit')
-			print(entorno.tipos)
-			print('--- Type :', ty)
-			print('--- Check :', ch)
-			entorno.browser.open(entorno.browser.geturl())
-			entorno.initialize()
+			print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ',cp_tipos)
+			print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Type :', ty)
+			print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Check :', ch)
+			
+			#entorno.reload()
 
 			entorno.browser['title'] = text
 			entorno.browser['cantidad'] = number
@@ -211,7 +227,7 @@ def set_submit_form(entorno, last_state, numr):
 
 		
 
-			entorno.browser.set(True, entorno.tipos[int(ty)] , "type")
+			entorno.browser.set(True, ty, "type")
 			entorno.status_submit = '1'
 
 			#create new state on every different submition data, save URL with each state
@@ -230,27 +246,29 @@ def set_submit_form(entorno, last_state, numr):
 				#print(code)
 				entorno.http_response = code
 				if entorno.http_response == 200:
+					print('--- URL New before recursive: ', entorno.browser.geturl())
 					print('**** call recursive')
 					numr = numr +1
+					#print('---- debug error: ', current_state.id, current_state.url)
 					set_submit_form(entorno, current_state, numr)
 					
 
 			except mechanize.HTTPError as e:
-				print('------- Error:', e)
-				error_400 = "HTTP Error 400: Bad Request"
-				error_500 = "HTTP Error 500: Internal Server Error"
-				"""if e ==error_400:
+				error = str(e)
+				print('-------------- *Error:',error)
+				print('aqui va el error')
+				if error == 'HTTP Error 400: Bad Request':
 					print('got error 400')
-					build_error_chain(current_state)
-				elif e ==error_500:
+					#build_error_chain('error 400')
+				elif error == 'HTTP Error 500: Internal Server Error':
 					print('got error 500')
-					build_error_chain(current_state)"""
+					build_error_chain('error 500')
 
 				#entorno.http_response = 500
 				#TODO capture error?
 				#return
 
-
+#TODO UPDATE URL en entorno para saber en donde esta.
 
 class Enviroment:
 	def __init__(self, url):
@@ -265,6 +283,13 @@ class Enviroment:
 		self.status_submit = '0'
 		self.http_response = ''
 		#self.browser = Browser()
+		self.browser.open(url)
+		self.browser.select_form(nr=1)
+		#self.url = url
+		#self.tipos = []
+	def reload(self):
+		self.status_submit = '0'
+		self.http_response = ''
 		#self.browser.open(url)
 		self.browser.select_form(nr=1)
 		#self.url = url
@@ -280,4 +305,7 @@ root_state = new_path.append(0, None, None, None, None, None, None)
 
 global_error_stack = Stack()
 
+counter_errors = 0
+
 set_submit_form(entorno, root_state, 0)
+global_error_stack.print_list()
