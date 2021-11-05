@@ -17,7 +17,7 @@ url = "http://localhost:8080/page_1"
 
 
 class State:
-	def __init__(self, id, text, number, check, type, url):
+	def __init__(self, id, text, number, check, type, url, error_code):
 		#form state variables 
 		self.text = text
 		self.number = number
@@ -27,6 +27,7 @@ class State:
 		self.prev_node = None
 		self.id = id
 		self.url =  url
+		self.error_code = error_code
 		#TODO add branches references to build tree
 
 
@@ -37,10 +38,10 @@ class Path:
 		self.nodes_counter = 0
 
 	#append new elements to path method
-	def append(self, id, prev_state, text, number, check, type, url):
+	def append(self, id, prev_state, text, number, check, type, url, error_code):
 		#create new state
 		self.nodes_counter = self.nodes_counter + id
-		new_state = State(self.nodes_counter, text, number, check, type, url)
+		new_state = State(self.nodes_counter, text, number, check, type, url, error_code)
 		
 		#check if path root is None (it means theresn't a root path already set)
 		#here prev_state would be None, because is the first node without a previous node
@@ -99,6 +100,34 @@ class Stack:
 			while current_node != None:
 				#print(current_node.data.url)
 				print(current_node.data)
+				current_node = current_node.next_node
+	
+
+	#print elements of linked list
+	def print_errors(self):
+		if self.head != None:
+			current_node = self.head
+			while current_node != None:
+				print('--- error branch ---- ')
+				#print(current_node.data.url)
+				#print(current_node.data)
+				local_stack =  current_node.data
+
+				if local_stack.head != None:
+					local_current_node = local_stack.head
+					while local_current_node != None:
+						print('********')
+						print(local_current_node.data.error_code)
+						print(local_current_node.data.url)
+						print('Text', local_current_node.data.text)
+						print('Number', local_current_node.data.number)
+						print('Check', local_current_node.data.check)
+						print('Type', local_current_node.data.type)
+						print('********')
+
+						#print(current_node.data)
+						local_current_node = local_current_node.next_node
+
 				current_node = current_node.next_node
 
 
@@ -172,9 +201,8 @@ def recreate_state(state, entorno):
 
 def build_error_chain(state):
 
-	global_error_stack.push(state)
-	
-	"""#create an stack where is stored from the current state to previous node before root
+	#global_error_stack.push(state)
+	#create an stack where is stored from the current state to previous node before root
 	local_error_stack = Stack()
 	#asign state to current state
 	current_state = state
@@ -183,7 +211,7 @@ def build_error_chain(state):
 		local_error_stack.push(current_state)
 		current_state = current_state.prev_node
 	
-	global_error_stack.push(local_error_stack)"""
+	global_error_stack.push(local_error_stack)
 
 
 
@@ -232,7 +260,7 @@ def set_submit_form(entorno, last_state, numr):
 
 			#create new state on every different submition data, save URL with each state
 
-			current_state = new_path.append(last_state.id, last_state, text, number, ch, ty, entorno.browser.geturl())
+			current_state = new_path.append(last_state.id, last_state, text, number, ch, ty, entorno.browser.geturl(), '200')
 			#submit form
 			try:
 				print('-----try to submit')
@@ -262,7 +290,8 @@ def set_submit_form(entorno, last_state, numr):
 					#build_error_chain('error 400')
 				elif error == 'HTTP Error 500: Internal Server Error':
 					print('got error 500')
-					build_error_chain('error 500')
+					current_state.error_code = "500"
+					build_error_chain(current_state)
 
 				#entorno.http_response = 500
 				#TODO capture error?
@@ -301,11 +330,11 @@ entorno = Enviroment(url)
 
 new_path = Path()
 
-root_state = new_path.append(0, None, None, None, None, None, None)
+root_state = new_path.append(0, None, None, None, None, None, None, None)
 
 global_error_stack = Stack()
 
 counter_errors = 0
 
 set_submit_form(entorno, root_state, 0)
-global_error_stack.print_list()
+global_error_stack.print_errors()
