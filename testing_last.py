@@ -40,8 +40,10 @@ class Path:
 	#append new elements to path method
 	def append(self, id, prev_state, text, number, check, type, url, error_code):
 		#create new state
-		self.nodes_counter = self.nodes_counter + id
+
+		
 		new_state = State(self.nodes_counter, text, number, check, type, url, error_code)
+		self.nodes_counter = self.nodes_counter +1
 		
 		#check if path root is None (it means theresn't a root path already set)
 		#here prev_state would be None, because is the first node without a previous node
@@ -117,7 +119,8 @@ class Stack:
 					local_current_node = local_stack.head
 					while local_current_node != None:
 						print('********')
-						print(local_current_node.data.error_code)
+						print('ID', local_current_node.data.id)
+						print('Error', local_current_node.data.error_code)
 						print(local_current_node.data.url)
 						print('Text', local_current_node.data.text)
 						print('Number', local_current_node.data.number)
@@ -278,6 +281,8 @@ def set_submit_form(entorno, last_state, numr):
 					print('**** call recursive')
 					numr = numr +1
 					#print('---- debug error: ', current_state.id, current_state.url)
+					#current_state.error_code = "200"
+					#build_error_chain(current_state)
 					set_submit_form(entorno, current_state, numr)
 					
 
@@ -287,6 +292,8 @@ def set_submit_form(entorno, last_state, numr):
 				print('aqui va el error')
 				if error == 'HTTP Error 400: Bad Request':
 					print('got error 400')
+					current_state.error_code = "400"
+					build_error_chain(current_state)
 					#build_error_chain('error 400')
 				elif error == 'HTTP Error 500: Internal Server Error':
 					print('got error 500')

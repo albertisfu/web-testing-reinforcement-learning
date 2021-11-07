@@ -6,6 +6,10 @@ import urllib3
 
 import random
 
+#import sys
+#sys.setrecursionlimit(100000)
+
+
 text = 'aaaa'
 number = '9'
 
@@ -176,36 +180,56 @@ def set_submit_form(entorno, last_state):
 
 	print(';;;;;;;;; Entro Set Submit Form')
 
-	#recreate_state(last_state, entorno)
+	recreate_state(last_state, entorno)
 	#if stack vacio no se recrea nada
 	#fill current state
-	#entorno.initialize()
+	entorno.initialize()
 	print('----- URL actual')
+	print(entorno.browser.geturl())
+	entorno.tipos = entorno.browser.form.possible_items("type")
 
-	#entorno.tipos = entorno.browser.form.possible_items("type")
-	for ty in ['0', '1', '2', '3', '4']:
+	print('Tipos Entorno: ', entorno.tipos)
+	for ty in entorno.tipos:
 		for ch in ['on', 'off']:
 			#reload page to celan fields and test other combinations
 			#initialize browser to load form again also get tipos again
 
 			print('--- Entro Submit iterate type, ty:', ty)
+			print(entorno.tipos)
 
+			entorno.browser.open(entorno.browser.geturl())
+			entorno.initialize()
 
-	
+			entorno.browser['title'] = text
+			entorno.browser['cantidad'] = number
+			if ch == 'on':
+				entorno.browser.find_control("checkbox").items[0].selected = True
+			else:
+				entorno.browser.find_control("checkbox").items[0].selected = False
+
+		
+
+			entorno.browser.set(True, entorno.tipos[int(ty)] , "type")
+			entorno.status_submit = '1'
+
 			#create new state on every different submition data, save URL with each state
-			current_state = new_path.append(last_state.id, last_state, text, number, ch, ty,url)
+			current_state = new_path.append(last_state.id, last_state, text, number, ch, ty, entorno.browser.geturl())
 
 			#submit form
 			try:
 				print('-----try to submit')
 				
+				response = entorno.browser.submit()
+				
 				#print('after submit')
 				#content = response.read()
-				
+				code = response.code
 				#print(code)
-	
-				print('**** call recursive')
-				return set_submit_form(entorno, current_state)
+				entorno.http_response = code
+				if entorno.http_response == 200:
+					print('**** call recursive')
+					set_submit_form(entorno, current_state)
+					
 
 			except mechanize.HTTPError as e:
 				print('------- Error:', e)
