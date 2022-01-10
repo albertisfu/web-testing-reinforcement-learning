@@ -41,11 +41,6 @@ class Tree:
 	
 
 
-
-
-
-
-
 def build_tree(range_list, tree, node_to_append):
 #copy list and delete first element
 	reduced_list = range_list[:]
@@ -77,7 +72,8 @@ def get_all_paths(tree):
 	print(counter)
 		
 
-range_list = [[0,1], [0,1,2], [0,1], [0,1],  [0,1,2,3]]
+#range_list = [[0,1], [0,1,2], [0,1], [0,1],  [0,1,2,3]]
+range_list = [[0,1,2],[0,1], [0,1], [0,1], [0,1], [0,1], [0,1]]
 new_tree = Tree()
 build_tree(range_list, new_tree, None)
 
